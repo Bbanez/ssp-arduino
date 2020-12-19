@@ -1,4 +1,6 @@
 #include "Arduino.h"
 
 void setup() {}
-void loop() {}
+void loop() {
+  while(1) {}
+}
