@@ -3,16 +3,17 @@
 
 #include "HardwareSerial.h"
 #include "SSPAddress.h"
-#include "SSPPacket.h"
 #include "SSPConst.h"
+#include "SSPPacket.h"
 
 class SSP
 {
 public:
   SSP(HardwareSerial *hSerial, SSPAddress deviceAddress,
-                unsigned long comm_baud,
-                void (*onPacketReceived)(SSPPacket *packet),
-                bool debug);
+      unsigned long comm_baud, void (*onPacketReceived)(SSPPacket *packet));
+  SSP(HardwareSerial *hSerial, SSPAddress deviceAddress,
+      unsigned long comm_baud, void (*onPacketReceived)(SSPPacket *packet),
+      bool debug);
   void send(String packetAsString);
   void send(SSPPacket *packet);
   void send(SSPPacket packet);

@@ -1,9 +1,25 @@
 #include "SSP.h"
 
-SSP::SSP(
-    HardwareSerial *hSerial, SSPAddress deviceAddress,
-    unsigned long comm_baud,
-    void (*onPacketReceived)(SSPPacket *packet), bool _debug)
+SSP::SSP(HardwareSerial *hSerial, SSPAddress deviceAddress,
+         unsigned long comm_baud, void (*onPacketReceived)(SSPPacket *packet))
+{
+  serial  = hSerial;
+  address = deviceAddress;
+  serial->begin(comm_baud);
+  while (!serial)
+    ;
+  callback            = onPacketReceived;
+  connected           = false;
+  packetStarted       = false;
+  byteBuffer          = 0;
+  packetBuffer        = "";
+  clearPacketBufferAt = 0;
+  debug               = false;
+}
+
+SSP::SSP(HardwareSerial *hSerial, SSPAddress deviceAddress,
+         unsigned long comm_baud, void (*onPacketReceived)(SSPPacket *packet),
+         bool _debug)
 {
   serial  = hSerial;
   address = deviceAddress;
@@ -19,10 +35,7 @@ SSP::SSP(
   debug               = _debug;
 }
 
-void SSP::send(String packetAsString)
-{
-  serial->print(packetAsString);
-}
+void SSP::send(String packetAsString) { serial->print(packetAsString); }
 
 void SSP::send(SSPPacket *packet)
 {
@@ -48,9 +61,9 @@ void SSP::run(unsigned long t)
       if (packetStarted) {
         switch (byteBuffer) {
           case SSP_END_BYTE: {
-            packetStarted              = false;
-            SSPPacket packet = SSPPacket();
-            String buildResult         = packet.buildDebug(packetBuffer);
+            packetStarted      = false;
+            SSPPacket packet   = SSPPacket();
+            String buildResult = packet.buildDebug(packetBuffer);
             if (buildResult.equals("")) {
               if (packet.getTo().get() == address.get()) {
                 callback(&packet);
